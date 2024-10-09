@@ -1,0 +1,48 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL") // Your MySQL connection URL
+}
+
+
+enum UserRole {
+  admin
+}
+
+model User {
+  id          Int       @id @default(autoincrement())
+  username    String    @unique
+  password    String    
+  role        UserRole  @default(admin)
+  createdAt   DateTime  @default(now())
+  videos      Video[]   @relation("UploadedBy")
+}
+
+
+
+model Video {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?
+  videoUrl    String
+  thumbnailUrl String?
+  uploadedBy  Int
+  createdAt   DateTime   @default(now())
+  user        User       @relation("UploadedBy", fields: [uploadedBy], references: [id])
+  views       VideoView[]
+}
+
+
+model VideoView {
+  id          Int       @id @default(autoincrement())
+  videoId     Int
+  userId      Int?
+  viewsCount  Int       @default(0)
+  viewedAt    DateTime  @default(now())
+  video       Video     @relation(fields: [videoId], references: [id])
+ 
+}
