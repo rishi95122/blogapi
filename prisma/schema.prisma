@@ -33,16 +33,6 @@ model Video {
   uploadedBy  Int
   createdAt   DateTime   @default(now())
   user        User       @relation("UploadedBy", fields: [uploadedBy], references: [id])
-  views       VideoView[]
 }
 
 
-model VideoView {
-  id          Int       @id @default(autoincrement())
-  videoId     Int
-  userId      Int?
-  viewsCount  Int       @default(0)
-  viewedAt    DateTime  @default(now())
-  video       Video     @relation(fields: [videoId], references: [id])
- 
-}
