@@ -1,17 +1,17 @@
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-// controllers/videoController.mjs
-export const getAllVideos = async (req, res, prisma) => {
+
+export const getAllVideos = async (req, res) => {
   try {
     const videos = await prisma.video.findMany();
-    res.json(videos);
+    return res.json(videos);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch videos" });
   }
 };
 
-export const getVideoById = async (req, res, prisma) => {
+export const getVideoById = async (req, res) => {
   try {
     const video = await prisma.video.findUnique({
       where: { id: Number(req.params.id) },
@@ -26,9 +26,10 @@ export const getVideoById = async (req, res, prisma) => {
   }
 };
 
-export const createVideo = async (req, res, prisma) => {
+export const createVideo = async (req, res) => {
   try {
     const { title, description, videoUrl, thumbnailUrl, uploadedBy } = req.body;
+    console.log(req.body);
     const video = await prisma.video.create({
       data: {
         title,
@@ -40,11 +41,12 @@ export const createVideo = async (req, res, prisma) => {
     });
     res.status(201).json(video);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Failed to create video" });
   }
 };
 
-export const updateVideo = async (req, res, prisma) => {
+export const updateVideo = async (req, res) => {
   try {
     const { title, description, videoUrl, thumbnailUrl } = req.body;
     const video = await prisma.video.update({
@@ -62,7 +64,7 @@ export const updateVideo = async (req, res, prisma) => {
   }
 };
 
-export const deleteVideo = async (req, res, prisma) => {
+export const deleteVideo = async (req, res) => {
   try {
     const video = await prisma.video.delete({
       where: { id: Number(req.params.id) },
