@@ -26,16 +26,16 @@ export const getVideoById = async (req, res, prisma) => {
   }
 };
 
-export const createVideo = async (req, res, prisma) => {
+export const createVideo = async (req, res) => {
   try {
-    const { title, description, videoUrl, thumbnailUrl, uploadedBy } = req.body;
+    const { title, description, url: videoUrl, thumbnail: thumbnailUrl } = req.body;
     const video = await prisma.video.create({
       data: {
         title,
         description,
         videoUrl,
         thumbnailUrl,
-        uploadedBy,
+        // uploadedBy can be added here if available
       },
     });
     res.status(201).json(video);
@@ -43,6 +43,7 @@ export const createVideo = async (req, res, prisma) => {
     res.status(500).json({ error: "Failed to create video" });
   }
 };
+
 
 export const updateVideo = async (req, res, prisma) => {
   try {
