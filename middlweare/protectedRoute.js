@@ -11,12 +11,13 @@ const protectRoute = async (req, res, next) => {
       return res.status(401).json({ error: "Unauthorized: No Token Provided" });
     }
 
-    const decoded = jwt.verify(token, "jwtkey");
+    const decoded = jwt.verify(token, process.env.JWTKEY);
 
     if (!decoded) {
       return res.status(401).json({ error: "Unauthorized: Invalid Token" });
     }
-    req.username = decoded;
+    console.log("Dec", decoded);
+    req.uploadedBy = decoded.id;
     next();
   } catch (err) {
     console.log("Error in protectRoute middleware", err.message);

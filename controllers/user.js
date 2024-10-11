@@ -32,8 +32,8 @@ export const login = async (req, res) => {
     const isPwdCorrect = await bcrypt.compare(password, user.password);
     if (!isPwdCorrect)
       return res.status(400).json({ error: "Authentication failed" });
-    const token = jwt.sign({ username: user.username }, "jwtkey", {
-      expiresIn: "2m",
+    const token = jwt.sign({ id: user.id }, process.env.JWTKEY, {
+      expiresIn: "20m",
     });
 
     console.log("logged");
@@ -55,7 +55,7 @@ export const getUser = (req, res) => {
   }
 
   try {
-    const decoded = jwt.verify(token, "jwtkey");
+    const decoded = jwt.verify(token, process.env.JWTKEY);
     if (!decoded) return res.status(401).json({ message: "Invalid token" });
     return res.status(200).json(decoded);
   } catch (error) {

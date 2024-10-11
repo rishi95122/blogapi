@@ -27,9 +27,10 @@ export const getVideoById = async (req, res) => {
 };
 
 export const createVideo = async (req, res) => {
+  const uploadedBy = req.uploadedBy;
   try {
-    const { title, description, videoUrl, thumbnailUrl, uploadedBy } = req.body;
-    console.log(req.body);
+    const { title, description, videoUrl, thumbnailUrl } = req.body;
+
     const video = await prisma.video.create({
       data: {
         title,
@@ -47,6 +48,7 @@ export const createVideo = async (req, res) => {
 };
 
 export const updateVideo = async (req, res) => {
+  const uploadedBy = req.uploadedBy;
   try {
     const { title, description, videoUrl, thumbnailUrl } = req.body;
     const video = await prisma.video.update({
@@ -56,6 +58,7 @@ export const updateVideo = async (req, res) => {
         description,
         videoUrl,
         thumbnailUrl,
+        uploadedBy,
       },
     });
     res.json(video);
