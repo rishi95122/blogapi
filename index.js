@@ -25,8 +25,14 @@ app.use(
     credentials: true,
   })
 );
-app.use(compression()); // Compress all responses
-app.use(express.json({ limit: "1mb" })); // Limit JSON parsing to 1MB
+app.use(
+  compression({
+    threshold: 0, // Compress all responses
+    level: 9, // Maximum compression level
+  })
+);
+// Compress all responses
+app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
@@ -45,7 +51,7 @@ app.use("/api/videos", videoRoutes);
 // Server and Port configuration
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is runndsadsadsaing on http://localhost:${PORT}`);
 });
 
 // Handle Prisma shutdown gracefully
