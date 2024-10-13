@@ -4,7 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import compression from "compression";
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
+
 import userRoutes from "./routes/userRoutes.js";
 import videoRoutes from "./routes/videoRoutes.js";
 import cluster from "cluster";
@@ -46,14 +46,6 @@ if (cluster.isPrimary) {
 
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: true }));
-
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-  app.use(limiter);
 
   app.use("/api/users", userRoutes);
   app.use("/api/videos", videoRoutes);
