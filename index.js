@@ -7,61 +7,70 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import userRoutes from "./routes/userRoutes.js";
 import videoRoutes from "./routes/videoRoutes.js";
+import cluster from "cluster";
+import os from "os";
 
-// Initialize Prisma
-const prisma = new PrismaClient();
+if (cluster.isPrimary) {
+  const numCPUs = os.cpus().length;
+  console.log(`Primary ${process.pid} is running`);
+  console.log(`Forking ${numCPUs} workers...\n`);
 
-// Load environment variables
-dotenv.config();
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
 
-// Create Express app
-const app = express();
+  cluster.on("exit", (worker, code, signal) => {
+    console.log(`Worker ${worker.process.pid} died. Forking a new worker...`);
+    cluster.fork();
+  });
+} else {
+  const prisma = new PrismaClient();
 
-// Apply middleware
-app.use(helmet()); // Security headers
-app.use(
-  cors({
-    origin: process.env.CLIENT_ORIGIN || "http://localhost:3000", // Update with allowed origin
-    credentials: true,
-  })
-);
-app.use(
-  compression({
-    threshold: 0, // Compress all responses
-    level: 9, // Maximum compression level
-  })
-);
-// Compress all responses
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: true }));
+  dotenv.config();
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per `window` (15 minutes)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-app.use(limiter); // Apply rate limiter to all requests
+  const app = express();
 
-// Routes
-app.use("/api/users", userRoutes);
-app.use("/api/videos", videoRoutes);
+  app.use(helmet());
+  app.use(
+    cors({
+      origin: process.env.CLIENT_ORIGIN || "http://localhost:3000",
+      credentials: true,
+    })
+  );
+  app.use(
+    compression({
+      threshold: 0,
+      level: 9,
+    })
+  );
 
-// Server and Port configuration
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is runndsadsadsaing on http://localhost:${PORT}`);
-});
+  app.use(express.json({ limit: "1mb" }));
+  app.use(express.urlencoded({ extended: true }));
 
-// Handle Prisma shutdown gracefully
-process.on("SIGINT", async () => {
-  console.log("Shutting down server...");
-  await prisma.$disconnect();
-  process.exit(0);
-});
-process.on("SIGTERM", async () => {
-  console.log("Shutting down server...");
-  await prisma.$disconnect();
-  process.exit(0);
-});
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use(limiter);
+
+  app.use("/api/users", userRoutes);
+  app.use("/api/videos", videoRoutes);
+
+  const PORT = process.env.PORT || 2000;
+  app.listen(PORT, () => {
+    console.log(`Server is runndsadsadsaing on http://localhost:${PORT}`);
+  });
+
+  process.on("SIGINT", async () => {
+    console.log("Shutting down server...");
+    await prisma.$disconnect();
+    process.exit(0);
+  });
+  process.on("SIGTERM", async () => {
+    console.log("Shutting down server...");
+    await prisma.$disconnect();
+    process.exit(0);
+  });
+}
